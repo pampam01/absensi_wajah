@@ -13,15 +13,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     let stream = null;
 
-    // Load models
+    // Load models in parallel with logging
     try {
-        loadingText.innerText = 'Memuat TinyFaceDetector...';
-        await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
-        loadingText.innerText = 'Memuat FaceLandmark68Net...';
-        await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
-        loadingText.innerText = 'Memuat FaceRecognitionNet...';
-        await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
+        console.time('FaceAPI_Load');
+        loadingText.innerText = 'Menginisialisasi AI...';
+        console.log('Mulai memuat model face-api...');
         
+        await Promise.all([
+            faceapi.nets.tinyFaceDetector.loadFromUri('/models').then(() => console.log('TinyFaceDetector loaded')),
+            faceapi.nets.faceLandmark68Net.loadFromUri('/models').then(() => console.log('FaceLandmark68 loaded')),
+            faceapi.nets.faceRecognitionNet.loadFromUri('/models').then(() => console.log('FaceRecognition loaded'))
+        ]);
+        
+        console.timeEnd('FaceAPI_Load');
+        console.log('Semua model berhasil dimuat.');
         loadingOverlay.classList.add('hidden');
         startVideo();
     } catch (e) {

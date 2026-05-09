@@ -27,18 +27,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const MATCH_THRESHOLD = 0.55;
 
-    // Load models and data
+    // Load models and data in parallel with logging
     try {
-        loadingText.innerText = 'Memuat Data Karyawan...';
-        await fetchEmployees();
-
-        loadingText.innerText = 'Memuat TinyFaceDetector...';
-        await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
-        loadingText.innerText = 'Memuat FaceLandmark68Net...';
-        await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
-        loadingText.innerText = 'Memuat FaceRecognitionNet...';
-        await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
+        console.time('Attendance_Init');
+        loadingText.innerText = 'Menginisialisasi AI & Data...';
+        console.log('Mulai memuat data dan model...');
         
+        await Promise.all([
+            fetchEmployees().then(() => console.log('Employees data loaded')),
+            faceapi.nets.tinyFaceDetector.loadFromUri('/models').then(() => console.log('TinyFaceDetector loaded')),
+            faceapi.nets.faceLandmark68Net.loadFromUri('/models').then(() => console.log('FaceLandmark68 loaded')),
+            faceapi.nets.faceRecognitionNet.loadFromUri('/models').then(() => console.log('FaceRecognition loaded'))
+        ]);
+        
+        console.timeEnd('Attendance_Init');
+        console.log('Semua inisialisasi berhasil.');
         loadingOverlay.classList.add('hidden');
         startVideo();
     } catch (e) {
